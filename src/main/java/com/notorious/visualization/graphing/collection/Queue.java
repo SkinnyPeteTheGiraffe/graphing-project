@@ -13,6 +13,7 @@
 
 package com.notorious.visualization.graphing.collection;
 
+import com.notorious.visualization.graphing.collection.queue.LinkedQueue;
 import com.notorious.visualization.graphing.util.StdIn;
 import com.notorious.visualization.graphing.util.StdOut;
 

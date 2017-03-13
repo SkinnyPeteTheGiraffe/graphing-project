@@ -53,17 +53,24 @@ import java.util.Optional;
  */
 public class Stack<T> implements Iterable<T> {
 
+    public static final String UNDERFLOW_ERROR_MESSAGE = "Stack underflow occurred during operation!";
     private Node<T> head;     // top of stack
     private int nSize;            // size of the stack
 
     // helper linked list class
     private static class Node<T> {
+        private final boolean dead;
         private T item;
         private Node<T> next;
 
-        public Node(T item, Node<T> next) {
+        public Node() {
+            dead = true;
+        }
+
+        Node(T item, Node<T> next) {
             this.item = item;
             this.next = next;
+            dead = false;
         }
 
         /**
@@ -83,6 +90,10 @@ public class Stack<T> implements Iterable<T> {
         public Node<T> getNext() {
             return next;
         }
+
+        boolean exists() {
+            return !dead;
+        }
     }
 
     /**
@@ -90,6 +101,8 @@ public class Stack<T> implements Iterable<T> {
      */
     public Stack() {
         //default
+        head = new Node<>(); //empty node
+        nSize = 0; //empties are not counted
     }
 
     /**
@@ -98,7 +111,7 @@ public class Stack<T> implements Iterable<T> {
      * @return true if this stack is empty; false otherwise
      */
     public boolean isEmpty() {
-        return !Optional.ofNullable(head).isPresent();
+        return !head.exists();
     }
 
     /**
@@ -127,9 +140,9 @@ public class Stack<T> implements Iterable<T> {
      * @throws NoSuchElementException if this stack is empty
      */
     public T pop() {
-        if (isEmpty()) throw new NoSuchElementException("Stack underflow");
-        T item = head.item;        // save item to return
-        head = head.next;            // delete first node
+        if (isEmpty()) throw new NoSuchElementException(UNDERFLOW_ERROR_MESSAGE);
+        T item = head.getItem();        // save item to return
+        head = head.getNext();            // delete first node
         nSize--;
         return item;                   // return the saved item
     }
@@ -142,8 +155,8 @@ public class Stack<T> implements Iterable<T> {
      * @throws NoSuchElementException if this stack is empty
      */
     public T peek() {
-        if (isEmpty()) throw new NoSuchElementException("Stack underflow");
-        return head.item;
+        if (isEmpty()) throw new NoSuchElementException(UNDERFLOW_ERROR_MESSAGE);
+        return head.getItem();
     }
 
     /**
@@ -167,29 +180,29 @@ public class Stack<T> implements Iterable<T> {
      * @return an iterator to this stack that iterates through the items in LIFO order
      */
     public Iterator<T> iterator() {
-        return new ListIterator<T>(head);
+        return new ListIterator<>(head);
     }
 
     // an iterator, doesn't implement remove() since it's optional
-    private class ListIterator<Item> implements Iterator<Item> {
-        private Node<Item> current;
+    private static class ListIterator<T> implements Iterator<T> {
+        private Node<T> current;
 
-        public ListIterator(Node<Item> first) {
+        ListIterator(Node<T> first) {
             current = first;
         }
 
         public boolean hasNext() {
-            return Optional.ofNullable(current).isPresent();
+            return current.exists();
         }
 
         public void remove() {
             throw new UnsupportedOperationException();
         }
 
-        public Item next() {
+        public T next() {
             if (!hasNext()) throw new NoSuchElementException();
-            Item item = current.item;
-            current = current.next; 
+            T item = current.getItem();
+            current = current.getNext();
             return item;
         }
     }
@@ -204,10 +217,11 @@ public class Stack<T> implements Iterable<T> {
         Stack<String> stack = new Stack<String>();
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();
-            if (!item.equals("-"))
+            if (!item.equals("-")) {
                 stack.push(item);
-            else if (!stack.isEmpty())
+            } else if (!stack.isEmpty()) {
                 StdOut.print(stack.pop() + " ");
+            }
         }
         StdOut.println("(" + stack.size() + " left on stack)");
     }

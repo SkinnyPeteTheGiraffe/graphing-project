@@ -11,16 +11,23 @@
  *
  ******************************************************************************/
 
-package com.notorious.visualization.graphing.collection;
+package com.notorious.visualization.graphing.collection.queue;
 
+import com.notorious.visualization.graphing.collection.Queue;
 import com.notorious.visualization.graphing.util.StdIn;
 import com.notorious.visualization.graphing.util.StdOut;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 /**
+ * A modern adaptation of the LinkedQueue.java written by Robert Sedgewick and Kevin Wayne.
+ * Following a much stricter OOP structure, adding encapsulation, removing null
+ * values by introducing empty node types, and introducing some of the features given by Java 8.
+ *
+ * <p>
+ * ORIGINAL DOCUMENTATION:
+ * -------------------------------------------------------------------------------
  *  The {@code LinkedQueue} class represents a first-in-first-out (FIFO)
  *  queue of generic items.
  *  It supports the usual <em>enqueue</em> and <em>dequeue</em>
@@ -28,62 +35,60 @@ import java.util.Optional;
  *  testing if the queue is empty, and iterating through
  *  the items in FIFO order.
  *  <p>
- *  This implementation uses a singly-linked list with a non-static nested class 
+ *  This implementation uses a singly-linked list with a non-static nested class
  *  for linked-list nodes.  See {@link Queue} for a version that uses a static nested class.
  *  The <em>enqueue</em>, <em>dequeue</em>, <em>peek</em>, <em>size</em>, and <em>is-empty</em>
  *  operations all take constant time in the worst case.
  *  <p>
  *  For additional documentation, see <a href="http://algs4.cs.princeton.edu/13stacks">Section 1.3</a> of
  *  <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
+ * -------------------------------------------------------------------------------
  *
  *  @author Robert Sedgewick
  *  @author Kevin Wayne
  */
 //@SuppressWarnings("ALL")
 public class LinkedQueue<T> implements Iterable<T> {
+    public static final String UNDERFLOW_ERROR_MESSAGE = "Queue underflow occurred during operation!";
+    private int n;         // number of elements on queue
+    private Node first;    // beginning of queue
+    private Node last;     // end of queue
 
     // helper linked list class
     private class Node {
+        private final boolean dead;
         private T item;
-        private Optional<Node> next;
+        private Node next;
 
-        public Node(T item) {
+        Node(T item) {
             this.item = item;
-            this.next = Optional.empty();
+            this.dead = false;
         }
 
-        public Node(T item, Node next) {
-            this.item = item;
-            this.next = Optional.ofNullable(next);
+        Node() {
+            this.dead = true;
+        }
+
+        boolean exists() {
+            return !dead;
+        }
+
+        public Node getNext() {
+            return next;
         }
 
         public T getItem() {
             return item;
         }
-
-        public Optional<Node> getNext() {
-            return next;
-        }
-
-        public void setItem(T item) {
-            this.item = item;
-        }
-
-        public void setNext(Node next) {
-            this.next = Optional.ofNullable(next);
-        }
     }
-
-    private int n;         // number of elements on queue
-    private Optional<Node> first;    // beginning of queue
-    private Optional<Node> last;     // end of queue
 
     /**
      * Initializes an empty queue.
      */
     public LinkedQueue() {
-        first = Optional.empty();
-        last = Optional.empty();
+        first = new Node();
+        last  = new Node();
+        n = 0;
         assert check();
     }
 
@@ -92,7 +97,7 @@ public class LinkedQueue<T> implements Iterable<T> {
      * @return true if this queue is empty; false otherwise
      */
     public boolean isEmpty() {
-        return !first.isPresent();
+        return !first.exists();
     }
 
     /**
@@ -100,7 +105,7 @@ public class LinkedQueue<T> implements Iterable<T> {
      * @return the number of items in this queue
      */
     public int size() {
-        return n;     
+        return n;
     }
 
     /**
@@ -109,8 +114,8 @@ public class LinkedQueue<T> implements Iterable<T> {
      * @throws java.util.NoSuchElementException if this queue is empty
      */
     public T peek() {
-        if (isEmpty() || !first.isPresent()) throw new NoSuchElementException("Queue underflow!");
-        return first.get().getItem();
+        if (isEmpty()) throw new NoSuchElementException(UNDERFLOW_ERROR_MESSAGE);
+        return first.item;
     }
 
     /**
@@ -118,12 +123,13 @@ public class LinkedQueue<T> implements Iterable<T> {
      * @param item the item to add
      */
     public void enqueue(T item) {
-        Optional<Node> original = last;
-        last = Optional.of(new Node(item));
+        Node last = this.last;
+        this.last = new Node(item);
+        this.last.next = new Node();
         if (isEmpty()) {
-            first = last;
+            first = this.last;
         } else {
-            original.ifPresent(o -> last.ifPresent(o::setNext));
+            last.next = this.last;
         }
         n++;
         assert check();
@@ -135,14 +141,13 @@ public class LinkedQueue<T> implements Iterable<T> {
      * @throws java.util.NoSuchElementException if this queue is empty
      */
     public T dequeue() {
-        if (isEmpty() || !first.isPresent()) throw new NoSuchElementException("Queue underflow");
-        Node f = first.get();
-        T item = f.getItem();
-        first = f.getNext();
+        if (isEmpty()) throw new NoSuchElementException(UNDERFLOW_ERROR_MESSAGE);
+        T item = first.item;
+        first = first.next;
         n--;
-        if (isEmpty()){
-            last = Optional.empty();   // to avoid loitering
-        }
+        if (isEmpty()) { 
+            last = new Node();
+        }   // to avoid loitering
         assert check();
         return item;
     }
@@ -154,88 +159,91 @@ public class LinkedQueue<T> implements Iterable<T> {
     public String toString() {
         StringBuilder s = new StringBuilder();
         for (T item : this) {
-            s.append(item + " ");
+            s.append(item).append(" ");
         }
         return s.toString();
-    } 
+    }
 
     // check internal invariants
     private boolean check() {
         if (n < 0) {
             return false;
-        } else if (n == 0) {
-            if (first.isPresent()) {
+        }
+        else if (n == 0) {
+            if (first.exists()) {
                 return false;
             }
-            if (last.isPresent()) {
+            if (last.exists()) {
                 return false;
             }
-        } else if (n == 1) {
-            if (!first.isPresent() || !last.isPresent()) {
+        }
+        else if (n == 1) {
+            if (!first.exists() || !last.exists()) {
                 return false;
             }
-            if (!first.equals(last)) {
+            if (first != last) {
                 return false;
             }
-            if (first.get().getNext() != null) {
+            if (first.next.exists()) {
                 return false;
             }
-        } else {
-            if (!first.isPresent() || !last.isPresent()) {
+        }
+        else {
+            if (!first.exists() || !last.exists()) {
                 return false;
             }
-            if (first.equals(last)) {
+            if (first == last) {
                 return false;
             }
-            if (first.get().getNext().isPresent()) {
+            if (!first.next.exists()) {
                 return false;
             }
-            if (last.get().getNext().isPresent()) {
+            if (last.next.exists()) {
                 return false;
             }
-
             // check internal consistency of instance variable n
             int numberOfNodes = 0;
-            for (Optional<Node> x = first; x.isPresent() && numberOfNodes <= n; x = x.get().getNext()) {
+            for (Node x = first; x.exists() && numberOfNodes <= n; x = x.next) {
                 numberOfNodes++;
             }
-            if (numberOfNodes != n) return false;
-
-            // check internal consistency of instance variable last
-            Optional<Node> lastNode = first;
-            while (lastNode.isPresent() && lastNode.get().getNext().isPresent()) {
-                lastNode = lastNode.get().getNext();
+            if (numberOfNodes != n) {
+                return false;
             }
-            if (last != lastNode) return false;
+            // check internal consistency of instance variable last
+            Node lastNode = first;
+            while (lastNode.next.exists()) {
+                lastNode = lastNode.next;
+            }
+            if (last != lastNode) {
+                return false;
+            }
         }
-
         return true;
-    } 
- 
+    }
+
 
     /**
      * Returns an iterator that iterates over the items in this queue in FIFO order.
      * @return an iterator that iterates over the items in this queue in FIFO order
      */
     public Iterator<T> iterator()  {
-        return new ListIterator();  
+        return new ListIterator();
     }
 
     // an iterator, doesn't implement remove() since it's optional
     private class ListIterator implements Iterator<T> {
-        private Optional<Node> current = first;
+        private Node current = first;
 
-        public boolean hasNext()  { return current.isPresent();                     }
+        public boolean hasNext()  { return current.exists();                     }
         public void remove()      { throw new UnsupportedOperationException();  }
 
         public T next() {
-            if (!hasNext() || !current.isPresent()) throw new NoSuchElementException();
-            T item = current.get().getItem();
-            current = current.get().getNext();
+            if (!hasNext()) throw new NoSuchElementException();
+            T item = current.item;
+            current = current.next;
             return item;
         }
     }
-
 
     /**
      * Unit tests the {@code LinkedQueue} data type.
@@ -243,7 +251,7 @@ public class LinkedQueue<T> implements Iterable<T> {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        LinkedQueue<String> queue = new LinkedQueue<String>();
+        LinkedQueue<String> queue = new LinkedQueue<>();
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();
             if (!item.equals("-"))
