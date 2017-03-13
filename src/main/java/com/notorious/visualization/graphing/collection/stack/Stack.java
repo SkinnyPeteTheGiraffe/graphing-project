@@ -19,17 +19,23 @@
  *
  ******************************************************************************/
 
-package com.notorious.visualization.graphing.collection;
+package com.notorious.visualization.graphing.collection.stack;
 
 import com.notorious.visualization.graphing.util.StdIn;
 import com.notorious.visualization.graphing.util.StdOut;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 
 /**
+ * A modern adaptation of the EdgeWeightedGraph.java written by Robert Sedgewick and Kevin Wayne.
+ * Following a much stricter OOP structure, adding encapsulation, removing literal null
+ * values, and introducing some of the features given by Java 8.
+ *
+ * <p>
+ * ORIGINAL DOCUMENTATION:
+ * -------------------------------------------------------------------------------
  *  The {@code Stack} class represents a last-in-first-out (LIFO) stack of generic items.
  *  It supports the usual <em>push</em> and <em>pop</em> operations, along with methods
  *  for peeking at the top item, testing if the stack is empty, and iterating through
@@ -45,15 +51,17 @@ import java.util.Optional;
  *  For additional documentation,
  *  see <a href="http://algs4.cs.princeton.edu/13stacks">Section 1.3</a> of
  *  <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
+ *-------------------------------------------------------------------------------
+ * @author Notorious
+ * @version 0.0.1
+ * @since 3/12/2017
  *
- *  @author Robert Sedgewick
- *  @author Kevin Wayne
- *
- *  @param <T> the generic type of an item in this stack
+ * @param <T> the generic type of an item in this stack
  */
 public class Stack<T> implements Iterable<T> {
 
-    public static final String UNDERFLOW_ERROR_MESSAGE = "Stack underflow occurred during operation!";
+    private static final String UNDERFLOW_ERROR_MESSAGE = "Stack underflow occurred during operation!";
+
     private Node<T> head;     // top of stack
     private int nSize;            // size of the stack
 

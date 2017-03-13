@@ -11,7 +11,7 @@
  *
  ******************************************************************************/
 
-package com.notorious.visualization.graphing.collection;
+package com.notorious.visualization.graphing.collection.queue;
 
 import com.notorious.visualization.graphing.util.StdIn;
 import com.notorious.visualization.graphing.util.StdOut;
@@ -39,8 +39,11 @@ import java.util.NoSuchElementException;
  *  @author Robert Sedgewick
  *  @author Kevin Wayne
  */
-public class ResizingArrayQueue<Item> implements Iterable<Item> {
-    private Item[] q;       // queue elements
+public class ResizingArrayQueue<T> implements Iterable<T> {
+
+    private static final String UNDERFLOW_ERROR_MESSAGE = "Queue underflow occurred during operation!";
+
+    private T[] q;       // queue elements
     private int n;          // number of elements on queue
     private int first;      // index of first element of queue
     private int last;       // index of next available slot
@@ -50,7 +53,7 @@ public class ResizingArrayQueue<Item> implements Iterable<Item> {
      * Initializes an empty queue.
      */
     public ResizingArrayQueue() {
-        q = (Item[]) new Object[2];
+        q = (T[]) new Object[2];
         n = 0;
         first = 0;
         last = 0;
@@ -75,7 +78,7 @@ public class ResizingArrayQueue<Item> implements Iterable<Item> {
     // resize the underlying array
     private void resize(int capacity) {
         assert capacity >= n;
-        Item[] temp = (Item[]) new Object[capacity];
+        T[] temp = (T[]) new Object[capacity];
         for (int i = 0; i < n; i++) {
             temp[i] = q[(first + i) % q.length];
         }
@@ -88,7 +91,7 @@ public class ResizingArrayQueue<Item> implements Iterable<Item> {
      * Adds the item to this queue.
      * @param item the item to add
      */
-    public void enqueue(Item item) {
+    public void enqueue(T item) {
         // double size of array if necessary and recopy to front of array
         if (n == q.length) resize(2*q.length);   // double size of array if necessary
         q[last++] = item;                        // add item
@@ -101,10 +104,10 @@ public class ResizingArrayQueue<Item> implements Iterable<Item> {
      * @return the item on this queue that was least recently added
      * @throws java.util.NoSuchElementException if this queue is empty
      */
-    public Item dequeue() {
-        if (isEmpty()) throw new NoSuchElementException("Queue underflow");
-        Item item = q[first];
-        q[first] = null;                            // to avoid loitering
+    public T dequeue() {
+        if (isEmpty()) throw new NoSuchElementException(UNDERFLOW_ERROR_MESSAGE);
+        T item = q[first];
+        q[first] = (T) new Object();                            // to avoid loitering
         n--;
         first++;
         if (first == q.length) first = 0;           // wrap-around
@@ -118,8 +121,8 @@ public class ResizingArrayQueue<Item> implements Iterable<Item> {
      * @return the item least recently added to this queue
      * @throws java.util.NoSuchElementException if this queue is empty
      */
-    public Item peek() {
-        if (isEmpty()) throw new NoSuchElementException("Queue underflow");
+    public T peek() {
+        if (isEmpty()) throw new NoSuchElementException(UNDERFLOW_ERROR_MESSAGE);
         return q[first];
     }
 
@@ -128,19 +131,19 @@ public class ResizingArrayQueue<Item> implements Iterable<Item> {
      * Returns an iterator that iterates over the items in this queue in FIFO order.
      * @return an iterator that iterates over the items in this queue in FIFO order
      */
-    public Iterator<Item> iterator() {
+    public Iterator<T> iterator() {
         return new ArrayIterator();
     }
 
     // an iterator, doesn't implement remove() since it's optional
-    private class ArrayIterator implements Iterator<Item> {
+    private class ArrayIterator implements Iterator<T> {
         private int i = 0;
         public boolean hasNext()  { return i < n;                               }
         public void remove()      { throw new UnsupportedOperationException();  }
 
-        public Item next() {
+        public T next() {
             if (!hasNext()) throw new NoSuchElementException();
-            Item item = q[(i + first) % q.length];
+            T item = q[(i + first) % q.length];
             i++;
             return item;
         }

@@ -1,4 +1,4 @@
-package com.notorious.visualization.graphing.collection;
+package com.notorious.visualization.graphing.collection.cache;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

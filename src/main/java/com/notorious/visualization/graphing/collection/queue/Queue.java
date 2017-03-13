@@ -11,9 +11,8 @@
  *
  ******************************************************************************/
 
-package com.notorious.visualization.graphing.collection;
+package com.notorious.visualization.graphing.collection.queue;
 
-import com.notorious.visualization.graphing.collection.queue.LinkedQueue;
 import com.notorious.visualization.graphing.util.StdIn;
 import com.notorious.visualization.graphing.util.StdOut;
 
@@ -21,6 +20,13 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
+ * A modern adaptation of the Queue.java written by Robert Sedgewick and Kevin Wayne.
+ * Following a much stricter OOP structure, adding encapsulation, removing null
+ * values by introducing empty node types, and introducing some of the features given by Java 8.
+ *
+ * <p>
+ * ORIGINAL DOCUMENTATION:
+ * -------------------------------------------------------------------------------
  *  The {@code Queue} class represents a first-in-first-out (FIFO)
  *  queue of generic items.
  *  It supports the usual <em>enqueue</em> and <em>dequeue</em>
@@ -37,29 +43,58 @@ import java.util.NoSuchElementException;
  *  <p>
  *  For additional documentation, see <a href="http://algs4.cs.princeton.edu/13stacks">Section 1.3</a> of
  *  <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
+ *  -------------------------------------------------------------------------------
  *
- *  @author Robert Sedgewick
- *  @author Kevin Wayne
+ * @author Notorious
+ * @version 0.0.1
+ * @since 3 /12/2017
  *
- *  @param <Item> the generic type of an item in this queue
+ * @param <T> the generic type of an item in this queue
  */
-public class Queue<Item> implements Iterable<Item> {
-    private Node<Item> first;    // beginning of queue
-    private Node<Item> last;     // end of queue
+public class Queue<T> implements Iterable<T> {
+    private Node<T> first;    // beginning of queue
+    private Node<T> last;     // end of queue
     private int n;               // number of elements on queue
 
     // helper linked list class
-    private static class Node<Item> {
-        private Item item;
-        private Node<Item> next;
+    private static class Node<T> {
+        private final boolean dead;
+        private T item;
+        private Node<T> next;
+
+        Node(T item, Node<T> next) {
+            this.item = item;
+            this.next = next;
+            this.dead = false;
+        }
+
+        Node() {
+            this.dead = true;
+        }
+
+        public T getItem() {
+            return item;
+        }
+
+        public Node<T> getNext() {
+            return next;
+        }
+
+        public void setNext(Node<T> next) {
+            this.next = next;
+        }
+
+        boolean exists() {
+            return !dead;
+        }
     }
 
     /**
      * Initializes an empty queue.
      */
     public Queue() {
-        first = null;
-        last  = null;
+        first = new Node<>();
+        last  = new Node<>();
         n = 0;
     }
 
@@ -69,7 +104,7 @@ public class Queue<Item> implements Iterable<Item> {
      * @return {@code true} if this queue is empty; {@code false} otherwise
      */
     public boolean isEmpty() {
-        return first == null;
+        return !first.exists();
     }
 
     /**
@@ -87,9 +122,9 @@ public class Queue<Item> implements Iterable<Item> {
      * @return the item least recently added to this queue
      * @throws NoSuchElementException if this queue is empty
      */
-    public Item peek() {
+    public T peek() {
         if (isEmpty()) throw new NoSuchElementException("Queue underflow");
-        return first.item;
+        return first.getItem();
     }
 
     /**
@@ -97,13 +132,14 @@ public class Queue<Item> implements Iterable<Item> {
      *
      * @param  item the item to add
      */
-    public void enqueue(Item item) {
-        Node<Item> oldlast = last;
-        last = new Node<Item>();
-        last.item = item;
-        last.next = null;
-        if (isEmpty()) first = last;
-        else           oldlast.next = last;
+    public void enqueue(T item) {
+        Node<T> original = last;
+        last = new Node<>(item, new Node<>());
+        if (isEmpty()) {
+            first = last;
+        } else {
+            original.setNext(last);
+        }
         n++;
     }
 
@@ -113,12 +149,14 @@ public class Queue<Item> implements Iterable<Item> {
      * @return the item on this queue that was least recently added
      * @throws NoSuchElementException if this queue is empty
      */
-    public Item dequeue() {
+    public T dequeue() {
         if (isEmpty()) throw new NoSuchElementException("Queue underflow");
-        Item item = first.item;
-        first = first.next;
+        T item = first.getItem();
+        first = first.getNext();
         n--;
-        if (isEmpty()) last = null;   // to avoid loitering
+        if (isEmpty()) {
+            last = new Node<>();   // to avoid loitering
+        }
         return item;
     }
 
@@ -129,7 +167,7 @@ public class Queue<Item> implements Iterable<Item> {
      */
     public String toString() {
         StringBuilder s = new StringBuilder();
-        for (Item item : this) {
+        for (T item : this) {
             s.append(item);
             s.append(' ');
         }
@@ -141,25 +179,29 @@ public class Queue<Item> implements Iterable<Item> {
      *
      * @return an iterator that iterates over the items in this queue in FIFO order
      */
-    public Iterator<Item> iterator()  {
-        return new ListIterator<Item>(first);  
+    public Iterator<T> iterator()  {
+        return new ListIterator<T>(first);
     }
 
     // an iterator, doesn't implement remove() since it's optional
-    private class ListIterator<Item> implements Iterator<Item> {
-        private Node<Item> current;
+    private static class ListIterator<T> implements Iterator<T> {
+        private Node<T> current;
 
-        public ListIterator(Node<Item> first) {
+        public ListIterator(Node<T> first) {
             current = first;
         }
 
-        public boolean hasNext()  { return current != null;                     }
-        public void remove()      { throw new UnsupportedOperationException();  }
+        public boolean hasNext()  {
+            return current.exists();
+        }
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
 
-        public Item next() {
+        public T next() {
             if (!hasNext()) throw new NoSuchElementException();
-            Item item = current.item;
-            current = current.next; 
+            T item = current.getItem();
+            current = current.getNext();
             return item;
         }
     }

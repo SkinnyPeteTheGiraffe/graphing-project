@@ -1,4 +1,4 @@
-package com.notorious.visualization.graphing.collection;
+package com.notorious.visualization.graphing.collection.cache;
 
 import com.notorious.visualization.graphing.util.StdIn;
 import com.notorious.visualization.graphing.util.StdOut;
@@ -40,6 +40,7 @@ public class Cache<T> implements Iterable<T> {
     // helper linked list class
     //kind of overkill, but I rather follow OOP structure as it fits my preference
     private static class Node<T> {
+        private final boolean dead;
         private T item;
         private Node<T> next;
 
@@ -52,6 +53,11 @@ public class Cache<T> implements Iterable<T> {
         Node(T item, Node<T> next) {
             this.item = item;
             this.next = next;
+            dead = false;
+        }
+
+        public Node() {
+            this.dead = true;
         }
 
         /**
@@ -71,6 +77,10 @@ public class Cache<T> implements Iterable<T> {
         T getItem() {
             return item;
         }
+
+        boolean exists() {
+            return !dead;
+        }
     }
 
     private Node<T> head;
@@ -81,6 +91,8 @@ public class Cache<T> implements Iterable<T> {
      */
     public Cache() {
         //default
+        head = new Node<>();
+        nSize = 0;
     }
 
     /**
@@ -89,7 +101,7 @@ public class Cache<T> implements Iterable<T> {
      * @return true if the cache is empty; otherwise false
      */
     public boolean isEmpty() {
-        return !Optional.ofNullable(head).isPresent();
+        return !head.exists();
     }
 
     /**
@@ -131,7 +143,7 @@ public class Cache<T> implements Iterable<T> {
         }
 
         public boolean hasNext() {
-            return Optional.ofNullable(current).isPresent();
+            return current.exists();
         }
 
         public void remove() {
@@ -152,7 +164,7 @@ public class Cache<T> implements Iterable<T> {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        Cache<String> bag = new Cache<String>();
+        Cache<String> bag = new Cache<>();
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();
             bag.add(item);
