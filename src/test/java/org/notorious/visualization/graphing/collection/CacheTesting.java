@@ -1,8 +1,8 @@
 package org.notorious.visualization.graphing.collection;
 
-import com.notorious.visualization.graphing.collection.Cache;
-import com.notorious.visualization.graphing.collection.LinkedCache;
-import com.notorious.visualization.graphing.collection.ResizableArrayCache;
+import com.notorious.visualization.graphing.collection.cache.Cache;
+import com.notorious.visualization.graphing.collection.cache.LinkedCache;
+import com.notorious.visualization.graphing.collection.cache.ResizableArrayCache;
 import com.notorious.visualization.graphing.util.In;
 import com.notorious.visualization.graphing.util.StdOut;
 import org.junit.Test;

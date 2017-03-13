@@ -13,7 +13,6 @@
 
 package com.notorious.visualization.graphing.collection.queue;
 
-import com.notorious.visualization.graphing.collection.Queue;
 import com.notorious.visualization.graphing.util.StdIn;
 import com.notorious.visualization.graphing.util.StdOut;
 
@@ -44,8 +43,11 @@ import java.util.NoSuchElementException;
  *  <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
  * -------------------------------------------------------------------------------
  *
- *  @author Robert Sedgewick
- *  @author Kevin Wayne
+ * @author Notorious
+ * @version 0.0.1
+ * @since 3 /12/2017
+ *
+ * @param <T> the generic type of an item in this queue
  */
 //@SuppressWarnings("ALL")
 public class LinkedQueue<T> implements Iterable<T> {

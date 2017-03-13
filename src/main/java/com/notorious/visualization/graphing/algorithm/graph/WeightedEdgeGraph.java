@@ -1,9 +1,13 @@
 package com.notorious.visualization.graphing.algorithm.graph;
 
-import com.notorious.visualization.graphing.collection.Cache;
-import com.notorious.visualization.graphing.collection.Stack;
+import com.notorious.visualization.graphing.collection.cache.Cache;
+import com.notorious.visualization.graphing.collection.stack.Stack;
 import com.notorious.visualization.graphing.util.In;
+import com.notorious.visualization.graphing.util.StdDraw;
 import com.notorious.visualization.graphing.util.StdRandom;
+
+import java.awt.*;
+import java.util.Iterator;
 
 /**
  * A modern adaptation of the EdgeWeightedGraph.java written by Robert Sedgewick and Kevin Wayne.
@@ -131,6 +135,29 @@ public class WeightedEdgeGraph {
         }
     }
 
+    public void render(){
+        int range = (int)Math.ceil(Math.sqrt(vertices));
+        StdDraw.setXscale(-1, range);
+        StdDraw.setYscale(-1, range);
+
+        StdDraw.setPenColor(Color.BLACK);
+        StdDraw.setPenRadius(0.01);
+        for(int i = 0; i < vertices; ++i) {
+            for(Edge e : getAdjacent(i)) {
+                int w = e.getOtherEndpoint(i);
+                StdDraw.line(w % range, w / range,i % range, i / range);
+            }
+        }
+        StdDraw.setPenRadius(0.05);
+        for(int i = 0; i < vertices; ++i) {
+            StdDraw.setPenColor(Color.GREEN);
+            StdDraw.point(i % range, i / range);
+            StdDraw.setPenColor(Color.RED);
+            StdDraw.textLeft(i % range, i / range, i + " ");
+        }
+    }
+
+
     /**
      * Returns the number of vertices in this edge-weighted graph.
      *
@@ -191,7 +218,7 @@ public class WeightedEdgeGraph {
      * @return the edges incident on vertex {@code v} as an Iterable
      * @throws IllegalArgumentException unless {@code 0 <= v < V}
      */
-    public Iterable<Edge> getAdjacent(int vertex) {
+    public Cache<Edge> getAdjacent(int vertex) {
         validateVertex(vertex);
         return adjacent[vertex];
     }

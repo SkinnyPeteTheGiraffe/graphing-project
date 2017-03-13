@@ -36,11 +36,15 @@ package com.notorious.visualization.graphing.algorithm.tree.spanning; /*********
 
 import com.notorious.visualization.graphing.algorithm.graph.Edge;
 import com.notorious.visualization.graphing.algorithm.graph.WeightedEdgeGraph;
-import com.notorious.visualization.graphing.collection.Queue;
+import com.notorious.visualization.graphing.collection.cache.Cache;
+import com.notorious.visualization.graphing.collection.queue.Queue;
 import com.notorious.visualization.graphing.util.In;
 import com.notorious.visualization.graphing.util.MinPQ;
-import com.notorious.visualization.graphing.util.StdOut;
+import com.notorious.visualization.graphing.util.StdDraw;
 import com.notorious.visualization.graphing.util.union.UF;
+
+import java.awt.*;
+import java.util.Iterator;
 
 /**
  *  The {@code KruskalMST} class represents a data type for computing a
@@ -72,6 +76,7 @@ import com.notorious.visualization.graphing.util.union.UF;
 public class KruskalMST {
     private static final double FLOATING_POINT_EPSILON = 1E-12;
 
+    private final int vertices;
     private double weight;                        // weight of MST
     private Queue<Edge> mst;// edges in MST
 
@@ -81,6 +86,7 @@ public class KruskalMST {
      */
     public KruskalMST(WeightedEdgeGraph edgeGraph) {
         mst = new Queue<>();
+        this.vertices = edgeGraph.getVerticesCount();
         // more efficient to build heap by passing array of edges
         MinPQ<Edge> pq = new MinPQ<>();
         for (Edge e : edgeGraph.getEdges()) {
@@ -99,9 +105,32 @@ public class KruskalMST {
                 weight += e.getWeight();
             }
         }
-
         // check optimality conditions
         assert check(edgeGraph);
+    }
+
+    public void render(){
+        int range = (int)Math.ceil(Math.sqrt(vertices));
+        StdDraw.setXscale(-1, range);
+        StdDraw.setYscale(-1, range);
+
+        Iterable<Edge> mst_edges = getEdges();
+        Iterator<Edge> it = mst_edges.iterator();
+        StdDraw.setPenColor(Color.BLACK);
+        StdDraw.setPenRadius(0.01);
+        while(it.hasNext()){
+            Edge e = it.next();
+            int v = e.getEndpointA();
+            int w = e.getOtherEndpoint(v);
+            StdDraw.line(v % range, v / range,w % range, w / range);
+        }
+        StdDraw.setPenRadius(0.05);
+        for(int i = 0; i < vertices; ++i) {
+            StdDraw.setPenColor(Color.GREEN);
+            StdDraw.point(i % range, i / range);
+            StdDraw.setPenColor(Color.RED);
+            StdDraw.textLeft(i % range, i / range, i + " ");
+        }
     }
 
     /**
@@ -109,7 +138,7 @@ public class KruskalMST {
      * @return the edges in a minimum spanning tree (or forest) as
      *    an iterable of edges
      */
-    public Iterable<Edge> edges() {
+    public Iterable<Edge> getEdges() {
         return mst;
     }
 
@@ -117,7 +146,7 @@ public class KruskalMST {
      * Returns the sum of the edge weights in a minimum spanning tree (or forest).
      * @return the sum of the edge weights in a minimum spanning tree (or forest)
      */
-    public double weight() {
+    public double getWeight() {
         return weight;
     }
     
@@ -126,17 +155,17 @@ public class KruskalMST {
 
         // check total weight
         double total = 0.0;
-        for (Edge e : edges()) {
+        for (Edge e : getEdges()) {
             total += e.getWeight();
         }
-        if (Math.abs(total - weight()) > FLOATING_POINT_EPSILON) {
-            System.err.printf("Weight of edges does not equal weight(): %f vs. %f\n", total, weight());
+        if (Math.abs(total - getWeight()) > FLOATING_POINT_EPSILON) {
+            System.err.printf("Weight of edges does not equal weight(): %f vs. %f\n", total, getWeight());
             return false;
         }
 
         // check that it is acyclic
         UF uf = new UF(edgeGraph.getVerticesCount());
-        for (Edge e : edges()) {
+        for (Edge e : getEdges()) {
             int v = e.getEndpointA(), w = e.getOtherEndpoint(v);
             if (uf.connected(v, w)) {
                 System.err.println("Not a forest");
@@ -155,7 +184,7 @@ public class KruskalMST {
         }
 
         // check that it is a minimal spanning forest (cut optimality conditions)
-        for (Edge e : edges()) {
+        for (Edge e : getEdges()) {
 
             // all edges in MST except e
             uf = new UF(edgeGraph.getVerticesCount());
@@ -181,19 +210,22 @@ public class KruskalMST {
     }
 
 
+    private static final String TEST_DATA_REFERENCE_ROOT = "org/notorious/visualization/graphing/collection/algorithm/tree/spanning/";
+    private static final String TEST_DATA_MEDIUM = "mediumEWG.txt";
+    private static final String TEST_DATA_LARGE = "largeEWG.txt";
     /**
      * Unit tests the {@code KruskalMST} data type.
      *
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        In in = new In(args[0]);
-        WeightedEdgeGraph G = new WeightedEdgeGraph(in);
-        KruskalMST mst = new KruskalMST(G);
-        for (Edge e : mst.edges()) {
-            StdOut.println(e);
-        }
-        StdOut.printf("%.5f\n", mst.weight());
+        StdDraw.setCanvasSize();
+        StdDraw.setCanvasSize(1024, 1024);
+        In in = new In(Cache.class.getClassLoader().getResource(TEST_DATA_REFERENCE_ROOT + TEST_DATA_MEDIUM));
+        WeightedEdgeGraph edgeGraph = new WeightedEdgeGraph(in);
+        KruskalMST mst = new KruskalMST(edgeGraph);
+        mst.render();
+        StdDraw.show();
     }
 
 }
