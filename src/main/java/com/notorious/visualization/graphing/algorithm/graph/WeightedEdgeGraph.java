@@ -1,6 +1,8 @@
 package com.notorious.visualization.graphing.algorithm.graph;
 
 import com.notorious.visualization.graphing.collection.Cache;
+import com.notorious.visualization.graphing.collection.Stack;
+import com.notorious.visualization.graphing.util.In;
 import com.notorious.visualization.graphing.util.StdRandom;
 
 /**
@@ -59,6 +61,52 @@ public class WeightedEdgeGraph {
         adjacent = (Cache<Edge>[]) new Cache[vertices];
         for (int v = 0; v < vertices; v++) {
             adjacent[v] = new Cache<>();
+        }
+    }
+
+    /**
+     * Initializes an edge-weighted graph from an input stream.
+     * The format is the number of vertices <em>V</em>,
+     * followed by the number of edges <em>E</em>,
+     * followed by <em>E</em> pairs of vertices and edge weights,
+     * with each entry separated by whitespace.
+     *
+     * @param  in the input stream
+     * @throws IllegalArgumentException if the endpoints of any edge are not in prescribed range
+     * @throws IllegalArgumentException if the number of vertices or edges is negative
+     */
+    public WeightedEdgeGraph(In in) {
+        this(in.readInt());
+        int E = in.readInt();
+        if (E < 0) throw new IllegalArgumentException("Number of edges must be nonnegative");
+        for (int i = 0; i < E; i++) {
+            int v = in.readInt();
+            int w = in.readInt();
+            validateVertex(v);
+            validateVertex(w);
+            double weight = in.readDouble();
+            Edge e = new Edge(v, w, weight);
+            addEdge(e);
+        }
+    }
+
+    /**
+     * Initializes a new edge-weighted graph that is a deep copy of {@code G}.
+     *
+     * @param  graph the edge-weighted graph to copy
+     */
+    public WeightedEdgeGraph(WeightedEdgeGraph graph) {
+        this(graph.getVerticesCount());
+        this.edges = graph.getEdgeCount();
+        for (int v = 0; v < graph.getVerticesCount(); v++) {
+            // reverse so that adjacency list is in same order as original
+            Stack<Edge> reverse = new Stack<Edge>();
+            for (Edge e : graph.adjacent[v]) {
+                reverse.push(e);
+            }
+            for (Edge e : reverse) {
+                adjacent[v].add(e);
+            }
         }
     }
 

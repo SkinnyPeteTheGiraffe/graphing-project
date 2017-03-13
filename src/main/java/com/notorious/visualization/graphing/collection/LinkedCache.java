@@ -68,7 +68,7 @@ public class LinkedCache<T> implements Iterable<T> {
         }
     }
 
-    private Node root;
+    private Node head;
     private int nSize;
 
     /**
@@ -84,7 +84,7 @@ public class LinkedCache<T> implements Iterable<T> {
      * @return true if the cache is empty; otherwise false
      */
     public boolean isEmpty() {
-        return !Optional.ofNullable(root).isPresent();
+        return !Optional.ofNullable(head).isPresent();
     }
 
     /**
@@ -102,12 +102,12 @@ public class LinkedCache<T> implements Iterable<T> {
      * @param t the item to be added
      */
     public void add(T t) {
-        root = new Node(t, root);
+        head = new Node(t, head);
         nSize++;
     }
 
     public Iterator<T> iterator() {
-        return new ListIterator(root);
+        return new ListIterator(head);
     }
 
     // an iterator, doesn't implement remove() since it's optional

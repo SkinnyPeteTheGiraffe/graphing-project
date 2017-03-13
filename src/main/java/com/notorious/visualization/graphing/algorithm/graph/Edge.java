@@ -28,6 +28,7 @@ public class Edge implements Comparable<Edge> {
     private static final String VERTEX_ERROR_MESSAGE = "Vertex index must be a non-negative integer value!";
     private static final String WEIGHT_ERROR_MESSAGE = "Weight value is NaN!";
     private static final String ENDPOINT_ERROR_MESSAGE = "Illegal endpoint!";
+    private static final String EDGE_STRING_FORMAT = "%d <-> %d |%.5f|";
 
     private final int a;
     private final int b;
@@ -115,6 +116,6 @@ public class Edge implements Comparable<Edge> {
      * @return a string representation of this edge
      */
     public String toString() {
-        return String.format("%d <-> %d |%.5f|", a, b, weight);
+        return String.format(EDGE_STRING_FORMAT, a, b, weight);
     }
 }
