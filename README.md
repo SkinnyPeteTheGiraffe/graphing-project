@@ -10,3 +10,6 @@ and also taking advantage of the features provided by Java 8.
 Credits for original code:
 - Robert Sedgewick 
 - Kevin Wayne
+
+Other Credits:
+- Quinn Rohlf (AnimatedPrimMST)
