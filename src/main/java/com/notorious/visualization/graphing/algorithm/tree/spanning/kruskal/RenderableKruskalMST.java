@@ -1,4 +1,4 @@
-package com.notorious.visualization.graphing.algorithm.tree.spanning; /******************************************************************************
+package com.notorious.visualization.graphing.algorithm.tree.spanning.kruskal; /******************************************************************************
  *  Compilation:  javac KruskalMST.java
  *  Execution:    java  KruskalMST filename.txt
  *  Dependencies: EdgeWeightedGraph.java Edge.java Queue.java
@@ -44,7 +44,9 @@ import com.notorious.visualization.graphing.util.StdDraw;
 import com.notorious.visualization.graphing.util.union.UF;
 
 import java.awt.*;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  *  The {@code KruskalMST} class represents a data type for computing a
@@ -73,10 +75,10 @@ import java.util.Iterator;
  *  @author Robert Sedgewick
  *  @author Kevin Wayne
  */
-public class KruskalMST {
+public class RenderableKruskalMST {
     private static final double FLOATING_POINT_EPSILON = 1E-12;
 
-    private final int vertices;
+    private final double[][] coordinates;
     private double weight;                        // weight of MST
     private Queue<Edge> mst;// edges in MST
 
@@ -84,9 +86,9 @@ public class KruskalMST {
      * Compute a minimum spanning tree (or forest) of an edge-weighted graph.
      * @param edgeGraph the edge-weighted graph
      */
-    public KruskalMST(WeightedEdgeGraph edgeGraph) {
+    public RenderableKruskalMST(WeightedEdgeGraph edgeGraph, double[][] coordinates) {
+        this.coordinates = coordinates;
         mst = new Queue<>();
-        this.vertices = edgeGraph.getVerticesCount();
         // more efficient to build heap by passing array of edges
         MinPQ<Edge> pq = new MinPQ<>();
         for (Edge e : edgeGraph.getEdges()) {
@@ -99,7 +101,14 @@ public class KruskalMST {
             Edge e = pq.delMin();
             int v = e.getEndpointA();
             int w = e.getOtherEndpoint(v);
+            StdDraw.setPenColor();
+            StdDraw.filledCircle(x(w), y(w), .01);
+            StdDraw.filledCircle(x(v), y(v), .01);
             if (!uf.connected(v, w)) { // v-w does not create a cycle
+                StdDraw.show(250);
+                StdDraw.setPenColor(Color.MAGENTA);
+                StdDraw.setPenRadius(.011);
+                StdDraw.line(x(v), y(v), x(w), y(w));
                 uf.union(v, w);  // merge v and w components
                 mst.enqueue(e);  // add edge e to mst
                 weight += e.getWeight();
@@ -109,28 +118,8 @@ public class KruskalMST {
         assert check(edgeGraph);
     }
 
-    public void render(){
-        int range = (int)Math.ceil(Math.sqrt(vertices));
-        StdDraw.setXscale(-1, range);
-        StdDraw.setYscale(-1, range);
-
-        Iterable<Edge> mst_edges = getEdges();
-        Iterator<Edge> it = mst_edges.iterator();
-        StdDraw.setPenColor(Color.BLACK);
-        StdDraw.setPenRadius(0.01);
-        while(it.hasNext()){
-            Edge e = it.next();
-            int v = e.getEndpointA();
-            int w = e.getOtherEndpoint(v);
-            StdDraw.line(v % range, v / range,w % range, w / range);
-        }
-        StdDraw.setPenRadius(0.05);
-        for(int i = 0; i < vertices; ++i) {
-            StdDraw.setPenColor(Color.GREEN);
-            StdDraw.point(i % range, i / range);
-            StdDraw.setPenColor(Color.RED);
-            StdDraw.textLeft(i % range, i / range, i + " ");
-        }
+    public Point getMidPoint(int a, int b, int v, int w) {
+        return new Point((a + v) / 2, (b + w) / 2);
     }
 
     /**
@@ -209,23 +198,13 @@ public class KruskalMST {
         return true;
     }
 
+    //Convenience methods for coordinate access
+    private double x(int i) {
+        return coordinates[i][0];
+    }
 
-    private static final String TEST_DATA_REFERENCE_ROOT = "org/notorious/visualization/graphing/collection/algorithm/tree/spanning/";
-    private static final String TEST_DATA_MEDIUM = "mediumEWG.txt";
-    private static final String TEST_DATA_LARGE = "largeEWG.txt";
-    /**
-     * Unit tests the {@code KruskalMST} data type.
-     *
-     * @param args the command-line arguments
-     */
-    public static void main(String[] args) {
-        StdDraw.setCanvasSize();
-        StdDraw.setCanvasSize(1024, 1024);
-        In in = new In(Cache.class.getClassLoader().getResource(TEST_DATA_REFERENCE_ROOT + TEST_DATA_MEDIUM));
-        WeightedEdgeGraph edgeGraph = new WeightedEdgeGraph(in);
-        KruskalMST mst = new KruskalMST(edgeGraph);
-        mst.render();
-        StdDraw.show();
+    private double y(int i) {
+        return coordinates[i][1];
     }
 
 }

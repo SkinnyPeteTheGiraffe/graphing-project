@@ -2,7 +2,7 @@ package org.notorious.visualization.graphing.collection;
 
 import com.notorious.visualization.graphing.algorithm.graph.Edge;
 import com.notorious.visualization.graphing.algorithm.graph.WeightedEdgeGraph;
-import com.notorious.visualization.graphing.algorithm.tree.spanning.KruskalMST;
+import com.notorious.visualization.graphing.algorithm.tree.spanning.kruskal.KruskalMST;
 import com.notorious.visualization.graphing.collection.cache.Cache;
 import com.notorious.visualization.graphing.util.In;
 import com.notorious.visualization.graphing.util.StdOut;
