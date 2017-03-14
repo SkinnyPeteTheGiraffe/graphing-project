@@ -37,7 +37,7 @@ public class AnimatedPrim {
 	}
 	
 	private void animate() {
-		AnimatedPrimMST p = new AnimatedPrimMST(g, coords);
+		RenderablePrimMST p = new RenderablePrimMST(g, coords);
 	}
 
 	private double distance(double x1, double y1, double x2, double y2) {

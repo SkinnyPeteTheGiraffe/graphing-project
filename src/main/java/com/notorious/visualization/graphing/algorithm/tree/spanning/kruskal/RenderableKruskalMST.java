@@ -36,19 +36,24 @@ package com.notorious.visualization.graphing.algorithm.tree.spanning.kruskal; /*
 
 import com.notorious.visualization.graphing.algorithm.graph.Edge;
 import com.notorious.visualization.graphing.algorithm.graph.WeightedEdgeGraph;
-import com.notorious.visualization.graphing.collection.cache.Cache;
+import com.notorious.visualization.graphing.algorithm.tree.spanning.prim.RenderablePrimMST;
 import com.notorious.visualization.graphing.collection.queue.Queue;
-import com.notorious.visualization.graphing.util.In;
 import com.notorious.visualization.graphing.util.MinPQ;
 import com.notorious.visualization.graphing.util.StdDraw;
 import com.notorious.visualization.graphing.util.union.UF;
 
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
+ * A modern adaptation of the KruskalMST.java written by Robert Sedgewick and Kevin Wayne.
+ * Following a much stricter OOP structure, adding encapsulation, removing literal null
+ * values, and introducing some of the features given by Java 8. This class renders the
+ * given edge graph, and each step of the process in 250ms intervals; supported by
+ * code written by Quinn Rohlf.
+ *
+ * <p>
+ * ORIGINAL DOCUMENTATION:
+ * -------------------------------------------------------------------------------
  *  The {@code KruskalMST} class represents a data type for computing a
  *  <em>minimum spanning tree</em> in an edge-weighted graph.
  *  The edge weights can be positive, zero, or negative and need not
@@ -69,11 +74,13 @@ import java.util.Set;
  *  For additional documentation,
  *  see <a href="http://algs4.cs.princeton.edu/43mst">Section 4.3</a> of
  *  <i>Algorithms, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
- *  For alternate implementations, see {@link LazyPrimMST}, {@link PrimMST},
+ *  For alternate implementations, see {@link LazyPrimMST}, {@link RenderablePrimMST},
  *  and {@link BoruvkaMST}.
+ * -------------------------------------------------------------------------------
  *
- *  @author Robert Sedgewick
- *  @author Kevin Wayne
+ * @author Notorious
+ * @version 0.0.1
+ * @since 3/13/2017
  */
 public class RenderableKruskalMST {
     private static final double FLOATING_POINT_EPSILON = 1E-12;
@@ -83,8 +90,11 @@ public class RenderableKruskalMST {
     private Queue<Edge> mst;// edges in MST
 
     /**
-     * Compute a minimum spanning tree (or forest) of an edge-weighted graph.
+     * Compute a minimum spanning tree (or forest) of an edge-weighted graph. All
+     * while animating the process using the {@link StdDraw} class for rendering.
+     *
      * @param edgeGraph the edge-weighted graph
+     * @param coordinates the 2D coordinates of the given edge graph
      */
     public RenderableKruskalMST(WeightedEdgeGraph edgeGraph, double[][] coordinates) {
         this.coordinates = coordinates;
@@ -102,13 +112,13 @@ public class RenderableKruskalMST {
             int v = e.getEndpointA();
             int w = e.getOtherEndpoint(v);
             StdDraw.setPenColor();
-            StdDraw.filledCircle(x(w), y(w), .01);
-            StdDraw.filledCircle(x(v), y(v), .01);
+            StdDraw.filledCircle(getXCoordinate(w), getYCoordinate(w), .01);
+            StdDraw.filledCircle(getXCoordinate(v), getYCoordinate(v), .01);
             if (!uf.connected(v, w)) { // v-w does not create a cycle
                 StdDraw.show(250);
                 StdDraw.setPenColor(Color.MAGENTA);
                 StdDraw.setPenRadius(.011);
-                StdDraw.line(x(v), y(v), x(w), y(w));
+                StdDraw.line(getXCoordinate(v), getYCoordinate(v), getXCoordinate(w), getYCoordinate(w));
                 uf.union(v, w);  // merge v and w components
                 mst.enqueue(e);  // add edge e to mst
                 weight += e.getWeight();
@@ -116,10 +126,6 @@ public class RenderableKruskalMST {
         }
         // check optimality conditions
         assert check(edgeGraph);
-    }
-
-    public Point getMidPoint(int a, int b, int v, int w) {
-        return new Point((a + v) / 2, (b + w) / 2);
     }
 
     /**
@@ -143,7 +149,7 @@ public class RenderableKruskalMST {
     private boolean check(WeightedEdgeGraph edgeGraph) {
 
         // check total weight
-        double total = 0.0;
+        double total = 0D;
         for (Edge e : getEdges()) {
             total += e.getWeight();
         }
@@ -157,7 +163,7 @@ public class RenderableKruskalMST {
         for (Edge e : getEdges()) {
             int v = e.getEndpointA(), w = e.getOtherEndpoint(v);
             if (uf.connected(v, w)) {
-                System.err.println("Not a forest");
+                System.err.println("Not a forest!");
                 return false;
             }
             uf.union(v, w);
@@ -167,14 +173,13 @@ public class RenderableKruskalMST {
         for (Edge e : edgeGraph.getEdges()) {
             int v = e.getEndpointA(), w = e.getOtherEndpoint(v);
             if (!uf.connected(v, w)) {
-                System.err.println("Not a spanning forest");
+                System.err.println("Not a spanning forest!");
                 return false;
             }
         }
 
         // check that it is a minimal spanning forest (cut optimality conditions)
         for (Edge e : getEdges()) {
-
             // all edges in MST except e
             uf = new UF(edgeGraph.getVerticesCount());
             for (Edge f : mst) {
@@ -187,7 +192,7 @@ public class RenderableKruskalMST {
                 int x = f.getEndpointA(), y = f.getOtherEndpoint(x);
                 if (!uf.connected(x, y)) {
                     if (f.getWeight() < e.getWeight()) {
-                        System.err.println("Edge " + f + " violates cut optimality conditions");
+                        System.err.println("Edge " + f + " violates cut optimality conditions!");
                         return false;
                     }
                 }
@@ -199,11 +204,11 @@ public class RenderableKruskalMST {
     }
 
     //Convenience methods for coordinate access
-    private double x(int i) {
+    private double getXCoordinate(int i) {
         return coordinates[i][0];
     }
 
-    private double y(int i) {
+    private double getYCoordinate(int i) {
         return coordinates[i][1];
     }
 

@@ -34,7 +34,7 @@ import com.notorious.visualization.graphing.util.union.UF;
  *  @author Robert Sedgewick
  *  @author Kevin Wayne
  */
-public class AnimatedPrimMST {
+public class RenderablePrimMST {
     private Edge[] edgeTo;        // edgeTo[v] = shortest edge from tree vertex to non-tree vertex
     private double[] distTo;      // distTo[v] = weight of shortest such edge
     private boolean[] marked;     // marked[v] = true if v on tree, false otherwise
@@ -45,7 +45,7 @@ public class AnimatedPrimMST {
      * Compute a minimum spanning tree (or forest) of an edge-weighted graph.
      * @param graph the edge-weighted graph
      */
-    public AnimatedPrimMST(WeightedEdgeGraph graph, double[][] coords) {
+    public RenderablePrimMST(WeightedEdgeGraph graph, double[][] coords) {
         edgeTo = new Edge[graph.getVerticesCount()];
         distTo = new double[graph.getVerticesCount()];
         marked = new boolean[graph.getVerticesCount()];
